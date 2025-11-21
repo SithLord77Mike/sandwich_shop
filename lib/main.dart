@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'views/app_styles.dart';
 
 void main() => runApp(const App());
 
@@ -14,14 +15,18 @@ class App extends StatelessWidget {
   }
 }
 
-// Robust, non-null type for selection
 enum SandwichType { footlong, sixInch }
 
 extension SandwichTypeLabel on SandwichType {
-  String get label => switch (this) {
-        SandwichType.footlong => 'Footlong',
-        SandwichType.sixInch => 'Six-inch',
-      };
+  String get label {
+    // Classic switch statement (works on older Dart language versions)
+    switch (this) {
+      case SandwichType.footlong:
+        return 'Footlong';
+      case SandwichType.sixInch:
+        return 'Six-inch';
+    }
+  }
 }
 
 class OrderScreen extends StatefulWidget {
@@ -34,7 +39,7 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   int _quantity = 0;
-  SandwichType _type = SandwichType.footlong; // non-null by design
+  SandwichType _type = SandwichType.footlong;
 
   void _increaseQuantity() {
     if (_quantity < widget.maxQuantity) setState(() => _quantity++);
@@ -59,14 +64,10 @@ class _OrderScreenState extends State<OrderScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               OrderItemDisplay(_quantity, _type.label),
-
               const SizedBox(height: 8),
               Text('Max: ${widget.maxQuantity}',
                   style: Theme.of(context).textTheme.bodySmall),
-
               const SizedBox(height: 16),
-
-              // Size selector using enum = no nulls
               SegmentedButton<SandwichType>(
                 segments: const [
                   ButtonSegment(
@@ -80,13 +81,12 @@ class _OrderScreenState extends State<OrderScreen> {
                 ],
                 selected: {_type},
                 onSelectionChanged: (sel) {
-                  // sel is a Set<SandwichType> and will have exactly 1 element
-                  setState(() => _type = sel.first);
+                  if (sel.isNotEmpty) {
+                    setState(() => _type = sel.first);
+                  }
                 },
               ),
-
               const SizedBox(height: 24),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -120,20 +120,15 @@ class OrderItemDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Build the emoji string safely
     final emoji = List.filled(quantity, '🥪').join();
     return Text(
       '$quantity $itemType sandwich(es): $emoji',
       textAlign: TextAlign.center,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-      ),
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     );
   }
 }
 
-// Reusable styled button
 class StyledButton extends StatelessWidget {
   final String text;
   final IconData icon;
